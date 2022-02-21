@@ -19,10 +19,10 @@ return new class extends Migration
             $table->string('last_name');
             $table->foreignId('position_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('status_id')->constrained();
-            $table->unsignedBigInteger('min_salary');
-            $table->unsignedBigInteger('max_salary');
-            $table->string('linkedin_url');
-            $table->string('cv');
+            $table->unsignedBigInteger('min_salary')->nullable();
+            $table->unsignedBigInteger('max_salary')->nullable();
+            $table->string('linkedin_url')->nullable();
+            $table->string('cv')->nullable();
             $table->timestamps();
         });
     }
