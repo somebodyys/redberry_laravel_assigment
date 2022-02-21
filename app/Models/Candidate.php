@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Http\Resources\TimelineResource;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class Candidate extends Model
@@ -56,6 +58,20 @@ class Candidate extends Model
     public function position()
     {
         return $this->belongsTo(Position::class);
+    }
+
+    /**
+     * Get the candidate timeline.
+     */
+    public function timeline(){
+
+        return TimelineResource::collection(
+            Activity::where([
+                ['subject_id', $this->id],
+                ['subject_type', Candidate::class],
+                ['log_name', 'Timeline']
+            ])->get()
+        );
     }
 
     public function getActivitylogOptions(): LogOptions

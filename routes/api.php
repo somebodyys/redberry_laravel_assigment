@@ -20,6 +20,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::resource('candidates', CandidateController::class);
+Route::post('candidates/{candidate}/timeline', [CandidateController::class, 'getTimeline']);
+Route::post('candidates/statuses/{status}', [CandidateController::class, 'getByStatus']);
 
 Route::fallback(function(){
     return response()->json([

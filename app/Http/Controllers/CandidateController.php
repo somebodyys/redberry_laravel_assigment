@@ -6,6 +6,7 @@ use App\Http\Requests\StoreCandidateRequest;
 use App\Http\Requests\UpdateCandidateRequest;
 use App\Http\Resources\CandidateResource;
 use App\Models\Candidate;
+use App\Models\Status;
 use Exception;
 use Illuminate\Http\JsonResponse;
 
@@ -56,19 +57,29 @@ class CandidateController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Candidate  $candidate
-     * @return Response
+     * @param Candidate $candidate
+     * @return JsonResponse
      */
     public function show(Candidate $candidate)
     {
-        //
+        try {
+
+            return response()->json(
+                CandidateResource::make($candidate)
+            );
+        } catch (Exception $exception) {
+
+            return response()->json([
+                'message' => $exception->getMessage()
+            ]);
+        }
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \App\Http\Requests\UpdateCandidateRequest  $request
-     * @param  \App\Models\Candidate  $candidate
+     * @param Candidate $candidate
      * @return Response
      */
     public function update(UpdateCandidateRequest $request, Candidate $candidate)
@@ -79,11 +90,61 @@ class CandidateController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Candidate  $candidate
-     * @return Response
+     * @param Candidate $candidate
+     * @return JsonResponse
      */
     public function destroy(Candidate $candidate)
     {
-        //
+        try {
+            $candidate->delete();
+
+            return response()->json([
+                'message' => true
+            ]);
+        } catch (Exception $exception) {
+            return response()->json([
+                'message' => $exception->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Get candidate status timeline
+     *
+     * @param Candidate $candidate
+     * @return JsonResponse
+     */
+    public function getTimeline(Candidate $candidate){
+        try {
+
+            return response()->json(
+                $candidate->timeline()
+            );
+        } catch (Exception $exception){
+            return response()->json([
+                'message' => $exception->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Get candidates by status
+     *
+     * @param Status $status
+     * @return JsonResponse
+     */
+    public function getByStatus(Status $status){
+        try {
+
+            return response()->json(
+                CandidateResource::collection(
+                    Candidate::where('status_id', $status->id)->get()
+                )
+            );
+        } catch (Exception $exception) {
+            return response()->json([
+                'message' => $exception->getMessage()
+            ]);
+        }
     }
 }
