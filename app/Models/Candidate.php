@@ -11,7 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Candidate extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -28,13 +28,6 @@ class Candidate extends Model
         'linkedin_url',
         'cv'
     ];
-
-    /**
-     * Only the `updated` event will get logged automatically
-     *
-     * @var array
-     */
-    protected static $recordEvents = [ 'updated' ];
 
     /**
      * The skills that belong to the candidate.
@@ -74,13 +67,4 @@ class Candidate extends Model
         );
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly(['status_id'])
-            ->useLogName('Timeline')
-            ->setDescriptionForEvent(
-                fn (string $eventName) => "Status has been $eventName"
-            );
-    }
 }

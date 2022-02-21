@@ -24,7 +24,15 @@ class UpdateCandidateRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'first_name' => 'sometimes|string',
+            'last_name' => 'sometimes|string',
+            'position_id' => 'sometimes|integer|exists:positions,id',
+            'status_id' => 'sometimes|integer|exists:statuses,id',
+            'min_salary' => 'sometimes|numeric',
+            'max_salary' => 'sometimes|numeric',
+            'linkedin_url' => 'sometimes|url',
+            'cv' => 'sometimes|file|mimes:pdf|max:20000',
+            'comment' => 'required_with:status_id'
         ];
     }
 }

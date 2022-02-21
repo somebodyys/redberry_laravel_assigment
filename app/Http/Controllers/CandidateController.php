@@ -6,6 +6,7 @@ use App\Http\Requests\StoreCandidateRequest;
 use App\Http\Requests\UpdateCandidateRequest;
 use App\Http\Resources\CandidateResource;
 use App\Models\Candidate;
+use App\Models\Skill;
 use App\Models\Status;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -41,10 +42,18 @@ class CandidateController extends Controller
     public function store(StoreCandidateRequest $request)
     {
         try {
+            $data = $request->validated();
+
+            if($file = $request->file('cv')){
+                $path = 'storage/cv_uploads/' . $data['first_name'] . '_' . $data['last_name'];
+                $fileName = time() . '.' . $file->extension();
+                $file->move(public_path($path), $fileName);
+                $data['cv'] = $path . '/' . $fileName;
+            }
 
             return response()->json(
                 CandidateResource::make(
-                    Candidate::create($request->validated())
+                    Candidate::create($data)
                 )
             );
         } catch (Exception $exception) {
@@ -78,13 +87,41 @@ class CandidateController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateCandidateRequest  $request
+     * @param UpdateCandidateRequest $request
      * @param Candidate $candidate
-     * @return Response
+     * @return JsonResponse
      */
     public function update(UpdateCandidateRequest $request, Candidate $candidate)
     {
-        //
+        try {
+            $data = $request->validated();
+
+            if($file = $request->file('cv')){
+                $path = 'storage/cv_uploads/' . $data['first_name'] . '_' . $data['last_name'];
+                $fileName = time() . '.' . $file->extension();
+                $file->move(public_path($path), $fileName);
+                $data['cv'] = $path . '/' . $fileName;
+            }
+
+            activity('Timeline')
+                ->performedOn($candidate)
+                ->withProperties([
+                    'old' => [ 'status_id' => (int)$candidate->status_id ],
+                    'attributes' => [ 'status_id' => (int)$data['status_id']]
+                ])
+                ->event('updated')
+                ->log($data['comment']);
+
+            $candidate->update($data);
+
+            return response()->json([
+                'message' => true
+            ]);
+        } catch (Exception $exception) {
+            return response()->json([
+                'message' => $exception->getMessage()
+            ]);
+        }
     }
 
     /**
@@ -141,6 +178,48 @@ class CandidateController extends Controller
                     Candidate::where('status_id', $status->id)->get()
                 )
             );
+        } catch (Exception $exception) {
+            return response()->json([
+                'message' => $exception->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Attach skill to candidate
+     *
+     * @param Candidate $candidate
+     * @param Skill $skill
+     * @return JsonResponse
+     */
+    public function attachSkill(Candidate $candidate, Skill $skill){
+        try {
+            $candidate->skills()->attach($skill);
+
+            return response()->json([
+                'message' => true
+            ]);
+        } catch (Exception $exception) {
+            return response()->json([
+                'message' => $exception->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Detach skill from candidate
+     *
+     * @param Candidate $candidate
+     * @param Skill $skill
+     * @return JsonResponse
+     */
+    public function detachSkill(Candidate $candidate, Skill $skill){
+        try {
+            $candidate->skills()->detach($skill);
+
+            return response()->json([
+                'message' => true
+            ]);
         } catch (Exception $exception) {
             return response()->json([
                 'message' => $exception->getMessage()

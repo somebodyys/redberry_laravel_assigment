@@ -19,11 +19,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::group(['prefix' => 'candidates'], function (){
-    Route::apiResource('/', CandidateController::class);
-    Route::post('/{candidate}/timeline', [CandidateController::class, 'getTimeline']);
-    Route::post('/statuses/{status}', [CandidateController::class, 'getByStatus']);
-});
+Route::apiResource('candidates', CandidateController::class);
+Route::post('candidates/{candidate}/timeline', [CandidateController::class, 'getTimeline']);
+Route::post('candidates/statuses/{status}', [CandidateController::class, 'getByStatus']);
+Route::post('candidates/{candidate}/skills/{skill}', [CandidateController::class, 'attachSkill']);
+Route::delete('candidates/{candidate}/skills/{skill}', [CandidateController::class, 'detachSkill']);
 
 
 Route::fallback(function(){
